@@ -1,0 +1,11 @@
+apiVersion: v2
+name: wireguard-server
+description: A simple Helm chart for deploying a Wireguard server
+type: application
+version: 1.0.0
+appVersion: 1.0.20210914
+keywords:
+  - wireguard
+  - server
+  - vpn
+icon: https://www.logo.wine/a/logo/WireGuard/WireGuard-Icon-Logo.wine.svg
