@@ -1,0 +1,26 @@
+{{- if and (not .Values.configPersistence.pvc.existingClaim) (eq .Values.configPersistence.type "pvc")}}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{include "wireguard-server.fullname" .}}
+  labels: {{- include "wireguard-server.labels" . | nindent 4}}
+  {{- with .Values.configPersistence.pvc.annotations  }}
+  annotations:
+    {{ toYaml . | indent 4 }}
+  {{- end }}
+  {{- with .Values.configPersistence.pvc.finalizers  }}
+  finalizers:
+    {{ toYaml . | indent 4 }}
+  {{- end }}
+spec:
+  accessModes:
+    {{- range .Values.configPersistence.pvc.accessModes }}
+    - {{ . | quote }}
+    {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.configPersistence.pvc.size | quote }}
+  {{- if .Values.configPersistence.pvc.storageClassName }}
+  storageClassName: {{ .Values.configPersistence.pvc.storageClassName }}
+  {{- end -}}
+{{- end -}}

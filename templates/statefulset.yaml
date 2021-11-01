@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+# StatefulSet to enable ordered deployment
+kind: StatefulSet
+metadata:
+  name: {{ include "wireguard-server.fullname" . }}
+  labels:
+    {{- include "wireguard-server.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  podManagementPolicy: OrderedReady
+  serviceName: {{ include "wireguard-server.fullname" . }}
+  selector:
+    matchLabels:
+      {{- include "wireguard-server.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "wireguard-server.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "wireguard-server.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: wireguard
+              containerPort: 51820
+              protocol: UDP
+          volumeMounts:
+            - name: host-modules
+              mountPath: /lib/modules
+            - name: config
+              mountPath: /config
+          envFrom:
+            - configMapRef:
+                name: {{ include "wireguard-server.fullname" . }}
+                optional: false
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+        - name: host-modules
+          hostPath:
+            path: /lib/modules
+            type: Directory
+        {{- with .Values.configPersistence  }}
+        - name: config
+          {{- if eq .type "pvc" }}
+          persistentVolumeClaim:
+            claimName: {{ .pvc.existingClaim | default (include "wireguard-server.fullname" $) }}
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+        {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

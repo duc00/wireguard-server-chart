@@ -1,0 +1,10 @@
+1. Get the peers QR codes by running this command:
+  export POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "wireguard-server.name" . }},app.kubernetes.io/instance={{ .Release.Name }}" -o jsonpath="{.items[0].metadata.name}")
+  kubectl exec -n {{ .Release.Namespace }} $POD_NAME -- /app/show-peer {{ join " " .Values.server.peers }}
+2. Server configuration is persisted and shared using{{- " " -}}
+{{- if eq .Values.configPersistence.type "pvc" -}}
+a PersistentVolumeClaim. Get more information by running this command:
+  kubectl describe -n {{ .Release.Namespace }} pvc {{ .existingClaim | default (include "wireguard-server.fullname" $) }}
+{{- else -}}
+an unknown element. Configuration might be faulty.
+{{- end -}}
