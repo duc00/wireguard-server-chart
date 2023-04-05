@@ -3,7 +3,7 @@
 This simple Helm is a lightweight way to configure and run a Wireguard VPN server in Kubernetes.
 
 ## Requirements:
-* Kubernetes
+* Kubernetes v1.26+
 * [Helm](https://helm.sh/docs/intro/install/) v3+
 
 ## Installing
