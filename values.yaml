@@ -26,8 +26,6 @@ server:
     PEERDNS: "auto"
     INTERNAL_SUBNET: "10.13.13.0"
     ALLOWEDIPS: "0.0.0.0/0"
-  peers:
-    - peer1
 
 configPersistence:
   type: pvc
